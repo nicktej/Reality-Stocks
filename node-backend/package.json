@@ -1,0 +1,19 @@
+{
+  "name": "dubhacks2018",
+  "version": "1.0.0",
+  "description": "DubHacks 2018 project.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thavythach/dubhacks2018.git"
+  },
+  "author": "Chase King, Nick Tan, Thavy Thach, Zoe Harrington",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/thavythach/dubhacks2018/issues"
+  },
+  "homepage": "https://github.com/thavythach/dubhacks2018#readme"
+}
