@@ -1,7 +1,7 @@
 const express = require("express");
 const fetch = require("node-fetch");
 var router = module.exports = express.Router();
-var cache;
+var cache = {};
 
 const queryAPI = (functionName, symbol, extra) => {
     return fetch(`https://www.alphavantage.co/query?apikey=${ALPHAVANTAGE_API_KEY}&function=${functionName}&symbol=${symbol}${extra ? "?" + extra : ""}`).then(response => response.json());
@@ -16,7 +16,8 @@ const COMPANIES = [
         logo: "https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png",
         // gradient: ["#FF1493", "#FF7F50"]
         gradient: ["#232526", "#414345"],
-
+        description: "Alphabet Inc. is an American multinational conglomerate headquartered in Mountain View, California. It was created through a corporate restructuring of Google on October 2, 2015 and became the parent company of Google and several former Google subsidiaries.",
+        ceo: "Larry Page (Oct 2, 2015-)"
     },
     {
         company: "Microsoft Corporation",
@@ -31,7 +32,9 @@ const COMPANIES = [
         ticker: "SBUX",
         logo: "https://assets-starbucks.netdna-ssl.com/img/starbucks-newsroom.svg",
         logoType: "square",
-        gradient: ["#141E30", "#243B55"]
+        gradient: ["#141E30", "#243B55"],
+        description: "Starbucks Corporation is an American coffee company and coffeehouse chain. Starbucks was founded in Seattle, Washington in 1971. As of 2018, the company operates 28,218 locations worldwide.",
+        ceo: "Kevin Johnson"
     }
 ];
 
@@ -41,14 +44,22 @@ router.use("/companies", (req, res) => {
 
 router.use("/stock/:ticker/:scale", (req, res) => {
     const { ticker, scale } = req.params;
+    let cacheKey = ticker + "/" + scale;
 
-    document.onkeydown = e => console.log("Key pressed", e.keyCode);
-    const triggerKeyDown = keyCode => document.dispatchEvent(new KeyboardEvent("keydown", { keyCode }));
-    triggerKeyDown(39);
+    if (cache[cacheKey]) {
+        return res.send(cache[cacheKey]);
+    }
 
     if (scale === "daily") {
-        return queryAPI("TIME_SERIES_DAILY", ticker).then(data => {
+        queryAPI("TIME_SERIES_DAILY", ticker).then(data => {
+            if (!data["Time Series (Daily)"]) {
+                return res.send({
+                    success: false
+                });
+            }
+
             let response = {
+                success: true,
                 ticker,
                 scale,
                 data: Object.keys(data["Time Series (Daily)"]).map(date => {
@@ -56,20 +67,25 @@ router.use("/stock/:ticker/:scale", (req, res) => {
 
                     return {
                         date,
-                        open: dateData["1. open"],
-                        high: dateData["2. high"],
-                        low: dateData["3. low"],
-                        close: dateData["4. close"],
-                        volume: dateData["5. volume"]
+                        open: parseFloat(dateData["1. open"]),
+                        high: parseFloat(dateData["2. high"]),
+                        low: parseFloat(dateData["3. low"]),
+                        close: parseFloat(dateData["4. close"]),
+                        volume: parseFloat(dateData["5. volume"])
                     }
                 })
             };
 
+            cache[cacheKey] = response;
+
             return res.send(response);
+        }).catch(error => {
+            console.error(error);
         });
     } else if (scale === "weekly") {
         return queryAPI("TIME_SERIES_WEEKLY", ticker).then(data => {
             let response = {
+                success: true,
                 ticker,
                 scale,
                 data: Object.keys(data["Weekly Time Series"]).map(date => {
@@ -77,11 +93,11 @@ router.use("/stock/:ticker/:scale", (req, res) => {
 
                     return {
                         date,
-                        open: dateData["1. open"],
-                        high: dateData["2. high"],
-                        low: dateData["3. low"],
-                        close: dateData["4. close"],
-                        volume: dateData["5. volume"]
+                        open: parseFloat(dateData["1. open"]),
+                        high: parseFloat(dateData["2. high"]),
+                        low: parseFloat(dateData["3. low"]),
+                        close: parseFloat(dateData["4. close"]),
+                        volume: parseFloat(dateData["5. volume"])
                     }
                 })
             };

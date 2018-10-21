@@ -5,125 +5,17 @@ import React, { Component, Fragment } from "react";
 import { Spring, Parallax, ParallaxLayer, config } from "react-spring";
 import moment, { isDuration } from "moment";
 import { Line } from "react-chartjs-2";
-import { CircularProgress, LinearProgress } from "@material-ui/core";
 import Leap from "leapjs";
-
-
-class Clock extends Component {
-    update = () => {
-        let now = moment();
-
-        this.setState({
-            time: now.format("h:mm:ss"),
-            amPm: now.format("A"),
-            stockMarketActive: false // TODO Dynamic
-        });
-    };
-
-    componentWillMount() {
-        this.taskId = setInterval(this.update, 1000);
-        this.update();
-    }
-
-    componentWillUnmount() {
-        clearInterval(this.taskId);
-    }
-
-    render() {
-        return (
-            <div className={"clock clock-" + (this.state.stockMarketActive ? "green" : "red")}>{this.state.time} <small>{this.state.amPm}</small></div>
-        )
-    }
-}
-
-const randomData = {
-    labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-    datasets: [
-        {
-            label: 'Random Test Data',
-            fill: false,
-            lineTension: 0.1,
-            backgroundColor: 'rgba(75,192,192,0.4)',
-            borderColor: 'rgba(75,192,192,1)',
-            borderCapStyle: 'butt',
-            borderDash: [],
-            borderDashOffset: 0.0,
-            borderJoinStyle: 'miter',
-            pointBorderColor: 'rgba(75,192,192,1)',
-            pointBackgroundColor: '#fff',
-            pointBorderWidth: 1,
-            pointHoverRadius: 5,
-            pointHoverBackgroundColor: 'rgba(75,192,192,1)',
-            pointHoverBorderColor: 'rgba(220,220,220,1)',
-            pointHoverBorderWidth: 2,
-            pointRadius: 1,
-            pointHitRadius: 10,
-            data: [65, 59, 80, 81, 56, 55, 40]
-        }
-    ]
-};
-
-const ChartTesting = props => (
-    <Line data={randomData} />
-)
-
-class Company extends Component {
-    render() {
-        return (
-            <ParallaxLayer className={"company-container" + (this.props.expanded ? " expanded" : "")} offset={this.props.offset} speed={0} onClick={this.props.onClick}>
-                <h1 className="company-name">{this.props.company}</h1>
-                <h2 className="company-ticker">{this.props.ticker}</h2>
-                <img className={"company-logo" + (this.props.logoType ? " logo-" + this.props.logoType : "")} src={this.props.logo} />
-
-                {this.props.expanded && <Parallax
-                    className="stock-info-slides"
-                    ref={e => this.parallax = e}
-                    pages={2}
-                    horizontal scrolling={false}
-                    config={config.slow}
-                >
-                    <ParallaxLayer className="stock-info-slide" offset={0} speed={0} onClick={e => this.parallax.scrollTo(1)}>
-                        <div className="flex">
-                            <div className="box flex flex-column">
-                                <div className="box bg-aqua">
-                                    <h3>CURRENT PRICE</h3>
-                                    <h1>$1,105.18</h1>
-                                </div>
-
-                                <div className="box bg-gold text-medium">
-                                    <h2>+7.27 (0.66%)</h2>
-                                </div>
-                            </div>
-
-                            <div className="box">
-                                <ChartTesting />
-                            </div>
-                        </div>
-                        <Clock />
-                        <h2> ^ Testing clock</h2>
-                    </ParallaxLayer>
-
-                    <ParallaxLayer className="stock-info-slide" offset={1} speed={0} onClick={e => this.parallax.scrollTo(0)}>
-                        <h2>Test Data</h2>
-                        <ChartTesting />
-                    </ParallaxLayer>
-                </Parallax>}
-            </ParallaxLayer>
-        )
-    }
-}
-
-const Loading = props => (
-    <div className="loading">
-        {/* <LinearProgress variant="query" color="blue" /> */}
-        <CircularProgress size={120} />
-    </div>
-);
+import StockChart from "./StockChart.js";
+import Company from "./Company.js";
+import Loading from "./Loading.js";
 
 export default class MainSlider extends Component {
     state = {
         index: 0,
-        expanded: false
+        subPageIndex: 0,
+        expanded: false,
+        companyStockData: []
     };
 
     setPage = index => {
@@ -135,8 +27,20 @@ export default class MainSlider extends Component {
             index = 0;
         }
 
-        this.setState({ index });
+        this.setState({ index, subPageIndex: 0 });
         this.parallax.scrollTo(index);
+    }
+
+    setSubPage = subPageIndex => {
+        if (!this.state.companies) return;
+
+        if (subPageIndex < 0) {
+            subPageIndex = 1; // Hardcoding 2 sub pages
+        } else if (subPageIndex >= 2) {
+            subPageIndex = 0;
+        }
+
+        this.setState({ subPageIndex });
     }
 
     triggerInteraction = keyCode => {
@@ -147,6 +51,19 @@ export default class MainSlider extends Component {
         this.setState({ lastInteraction: now });
     }
 
+    updateStockData = ticker => {
+        fetch("/api/stock/" + ticker + "/daily")
+            .then(response => response.json())
+            .then(response => {
+                this.setState(state => ({
+                    companyStockData: {
+                        ...state.companyStockData,
+                        [ticker]: response.success ? response.data : false
+                    }
+                }));
+            });
+    }
+
     componentDidMount() {
         // Fetch companies
         fetch("/api/companies")
@@ -154,6 +71,7 @@ export default class MainSlider extends Component {
             .then(companies => {
                 console.log("Loaded companies", companies);
                 this.setState({ companies });
+                companies.forEach(company => this.updateStockData(company.ticker))
             });
 
         var debug = 0;            // increasing level of debug output
@@ -167,7 +85,7 @@ export default class MainSlider extends Component {
         var controller = new Leap.Controller({ enableGestures: true });
 
         controller.on('connect', function () {
-            console.log("leapmotion:sucessful connection");
+            console.log("leapmotion:successful connection");
             foundLeap(); // let the user know we found it
         });
 
@@ -197,7 +115,6 @@ export default class MainSlider extends Component {
                 console.log("help");
                 this.triggerInteraction(38);
             }
-
         });
 
         // this is where start using the leap (if one is detected)
@@ -228,7 +145,6 @@ export default class MainSlider extends Component {
 
             // update the webpage with out current count data
             refreshCounts();
-
         }
 
         function handleKeyTap(tap) {
@@ -256,19 +172,24 @@ export default class MainSlider extends Component {
             element.innerHTML = "numSwipes " + numSwipes + ", left " + numSwipesLeft + ", right " + numSwipesRight + ", taps " + numTaps + ", key taps " + numKeyTaps + ", circles " + numCircles;
         }
 
-
         document.addEventListener("keydown", event => {
             if (event.keyCode === 37) {
                 // Left arrow
-                if (this.state.expanded) return;
-                this.setPage(this.state.index - 1);
+                if (this.state.expanded) {
+                    this.setSubPage(this.state.subPageIndex - 1);
+                } else {
+                    this.setPage(this.state.index - 1);
+                }
             } else if (event.keyCode === 38) {
                 // Up arrow
                 this.setState({ expanded: false });
             } else if (event.keyCode === 39) {
                 // Right arrow
-                if (this.state.expanded) return;
-                this.setPage(this.state.index + 1);
+                if (this.state.expanded) {
+                    this.setSubPage(this.state.subPageIndex + 1);
+                } else {
+                    this.setPage(this.state.index + 1);
+                }
             } else if (event.keyCode === 40) {
                 // Down arrow
                 this.setState({ expanded: true });
@@ -279,9 +200,13 @@ export default class MainSlider extends Component {
     render() {
         if (!this.state.companies) {
             return (
-                <Loading />
+                <div className="flex flex-column align-center">
+                    <Loading fullScreen />
+                </div>
             );
         }
+
+        console.log(this.state);
 
         let currentCompany = this.state.companies[this.state.index];
 
@@ -323,6 +248,9 @@ export default class MainSlider extends Component {
                             offset={index}
                             {...company}
                             expanded={this.state.expanded && this.state.index === index}
+                            stockData={this.state.companyStockData[company.ticker]}
+                            updateStockData={() => this.updateStockData(company.ticker)}
+                            index={this.state.subPageIndex}
                         />
                     ))}
                 </Parallax>}
