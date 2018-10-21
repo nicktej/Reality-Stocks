@@ -5,6 +5,7 @@
   "dependencies": {
     "@material-ui/core": "^3.2.2",
     "chart.js": "^2.7.3",
+    "leapjs": "^0.6.4",
     "moment": "^2.22.2",
     "react": "^16.5.2",
     "react-chartjs-2": "^2.7.4",

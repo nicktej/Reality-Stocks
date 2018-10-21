@@ -3,9 +3,11 @@
 
 import React, { Component, Fragment } from "react";
 import { Spring, Parallax, ParallaxLayer, config } from "react-spring";
-import moment from "moment";
+import moment, { isDuration } from "moment";
 import { Line } from "react-chartjs-2";
 import { CircularProgress, LinearProgress } from "@material-ui/core";
+import Leap from "leapjs";
+
 
 class Clock extends Component {
     update = () => {
@@ -136,6 +138,14 @@ export default class MainSlider extends Component {
         this.parallax.scrollTo(index);
     }
 
+    triggerInteraction = keyCode => {
+        let now = Date.now();
+        if (this.state.lastInteraction && now - this.state.lastInteraction < 500) return;
+        document.dispatchEvent(new KeyboardEvent("keydown", { keyCode }));
+        console.log("[DEBUG] Triggering key code", keyCode);
+        this.setState({ lastInteraction: now });
+    }
+
     componentDidMount() {
         // Fetch companies
         fetch("/api/companies")
@@ -144,6 +154,107 @@ export default class MainSlider extends Component {
                 console.log("Loaded companies", companies);
                 this.setState({ companies });
             });
+
+        var debug = 0;            // increasing level of debug output
+        var numSwipes = 0;        // total count of swipes seen
+        var numSwipesLeft = 0;
+        var numSwipesRight = 0;
+        var numTaps = 0;
+        var numKeyTaps = 0;
+        var numCircles = 0;
+
+        var controller = new Leap.Controller({ enableGestures: true });
+
+        controller.on('connect', function () {
+            console.log("leapmotion:sucessful connection");
+            foundLeap(); // let the user know we found it
+        });
+
+        controller.on('deviceConnected', function () {
+            console.log("leapmotion:leap device has been connected");
+        });
+
+        controller.on('deviceDisconnected', function () {
+            console.log("leapmotion:device disconnect");
+        });
+
+        controller.on('gesture', gesture => {
+            if (gesture.type == 'swipe') {
+                handleSwipe(gesture);
+                console.log("swipe");
+                this.triggerInteraction(39);
+            } else if (gesture.type == 'screenTap') {
+                console.log("screenTap");
+                handleTap(gesture);
+                this.triggerInteraction(40);
+            } else if (gesture.type == 'keyTap') {
+                console.log("keyTap");
+                handleKeyTap(gesture);
+                this.triggerInteraction(40);
+            } else if (gesture.type == 'circle') {
+                handleCircle(gesture);
+                console.log("help");
+                this.triggerInteraction(38);
+            }
+
+        });
+
+        // this is where start using the leap (if one is detected)
+        controller.connect();
+
+        // this function is called when we want to handle a swipe gesture,
+        // we are just going to keep a few counts of what was detected
+        function handleSwipe(swipe) {
+            if (swipe.state == 'stop') {
+                if (debug > 0) console.log("found a swipe, " + numSwipes);
+                numSwipes++;
+
+                // the swipe object will tell us which direction the swipe was in
+                if (swipe.direction[0] > 0) {
+                    numSwipesRight++;
+                } else {
+                    numSwipesLeft++;
+                }
+            }
+
+            // update the webpage with out current count data
+            refreshCounts();
+        }
+
+        function handleTap(tap) {
+            if (debug > 0) console.log("found a tap, " + numTaps);
+            numTaps++;
+
+            // update the webpage with out current count data
+            refreshCounts();
+
+        }
+
+        function handleKeyTap(tap) {
+            if (debug > 0) console.log("found a key tap, " + numKeyTaps);
+            numKeyTaps++;
+
+            // update the webpage with out current count data
+            refreshCounts();
+        }
+
+        function handleCircle(circle) {
+            if (debug > 0) console.log("found a cricle, " + numCircles);
+            numCircles++;
+
+            refreshCounts();
+        }
+
+        function foundLeap() {
+            var element = document.getElementById("foundLeap");
+            element.innerHTML = "Hey, you've got a LeapMotion attached, cool! Try swiping left and right";
+        }
+
+        function refreshCounts() {
+            var element = document.getElementById("counters");
+            element.innerHTML = "numSwipes " + numSwipes + ", left " + numSwipesLeft + ", right " + numSwipesRight + ", taps " + numTaps + ", key taps " + numKeyTaps + ", circles " + numCircles;
+        }
+
 
         document.addEventListener("keydown", event => {
             if (event.keyCode === 37) {

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>LeapMotion Testing of Swipe</title>
+
+    <script src="https://js.leapmotion.com/leap-0.6.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/97/three.js"></script>
+    <script src="https://js.leapmotion.com/leap-plugins-0.1.12.min.js"></script>
+    <script src="https://js.leapmotion.com/leap-widgets-0.1.0.min.js"></script>
+    <script src="https://js.leapmotion.com/leap.rigged-hand-0.1.7.min.js"></script>
+    <script src="https://js.leapmotion.com/leap-plugins-0.1.12-utils.min.js"></script>
+
+</head>
+
+<body>
+
+    <!-- 
+This is a simple example of using Javascript with the LeapMotion.
+All that this does is to open the LeapMotion and look for a few gestures of different types.
+When these are detected counters will appear and be incremented in the html
+on the page.
+A swipe gesture is defined as "something" moving from one side of the field
+of view to the other side.  Note that individual fingers are counted so
+a single finger being observed will be seen as one swipe.
+A tap gesture is equivalent to poking at the screen.
+
+The debug var can be set to 0 or non-zero and the larger the number
+the increased level of debug output to the JS console if you turn on developer mode
+in your browser.  I am primarily using Chrome but Safari also works for me.
+
+This page was very helpful while working on this:
+http://stackoverflow.com/questions/18018642/detecting-swipe-gesture-direction-with-leap-motion
+
+The webpage should look something like this if you have a LeapMotion attached
+
+Hey, you've got a LeapMotion attached, cool!
+numSwipes 16, left 9, right 7, taps 2
+
+
+I wanted this to be a complete and working example so if you have any suggestions on how to
+improve it please let me know.
+
+ -->
+
+    <script>
+        var debug = 0;            // increasing level of debug output
+        var numSwipes = 0;        // total count of swipes seen
+        var numSwipesLeft = 0;
+        var numSwipesRight = 0;
+        var numTaps = 0;
+        var numKeyTaps = 0;
+
+        var controller = new Leap.Controller({ enableGestures: true });
+
+        controller.on('connect', function () {
+            console.log("leapmotion:sucessful connection");
+            foundLeap(); // let the user know we found it
+        });
+
+        controller.on('deviceConnected', function () {
+            console.log("leapmotion:leap device has been connected");
+        });
+
+        controller.on('deviceDisconnected', function () {
+            console.log("leapmotion:device disconnect");
+        });
+
+        // the frame callback is for every frame received from the leap
+        // which can be a lot of them, for USB 3 maybe 200 fps,
+        // do not uncomment this unless you want to get all of them,
+        // gesture detection and handling will continue to work without this
+        /* 
+        controller.on('frame', function(frame) {
+            //console.log("got frame");
+            var fingerIds = {};
+            var handIds = {};
+            if (frame.hands == undefined) {
+                var handsLength = 0
+            } else {
+                        var handsLength = frame.hands.length;
+                        if ((frame.hands.length != 0) && (debug>1)) console.log("hand length " + frame.hands.length);
+        
+            }
+              if (frame.gestures.length != 0) {
+                if (debug>1) console.log("gesture length " + frame.gestures.length);
+            	
+                var i =0;
+                frame.gestures.forEach(function(entry) {
+                    if (debug>1)console.log("gesture entry " + i);
+                	
+                    i++;
+                });
+            	
+            } 
+        });
+        */
+
+        // the gesture callback occurs on gesture detection by the leap controller,
+        // from here you decide which gestures that you want to handle
+        controller.on('gesture', function (gesture) {
+            if (gesture.type == 'swipe') {
+                handleSwipe(gesture);
+            }
+            if (gesture.type == 'screenTap') {
+                handleTap(gesture);
+            }
+
+            if (gesture.type == 'keyTap') {
+                handleKeyTap(gesture); 
+            }
+
+            if (gesture.type == 'circle') {
+                handleCircle(gesture); 
+            }
+
+        });
+
+        // this is where start using the leap (if one is detected)
+        controller.connect();
+
+        // this function is called when we want to handle a swipe gesture,
+        // we are just going to keep a few counts of what was detected
+        function handleSwipe(swipe) {
+            if (swipe.state == 'stop') {
+                if (debug > 0) console.log("found a swipe, " + numSwipes);
+                numSwipes++;
+
+                // the swipe object will tell us which direction the swipe was in
+                if (swipe.direction[0] > 0) {
+                    numSwipesRight++;
+                } else {
+                    numSwipesLeft++;
+                }
+            }
+
+            // update the webpage with out current count data
+            refreshCounts();
+        }
+
+        // taps (poke at the screen) seem a little more difficult to detect correctly,
+        // i am regularly either missing the tap or getting both a swipe and a tap detection
+        // (but at least it is doing something)
+        function handleTap(tap) {
+            if (debug > 0) console.log("found a tap, " + numTaps);
+            numTaps++;
+
+            // update the webpage with out current count data
+            refreshCounts();
+
+        }
+
+        function handleKeyTap(tap){
+            if (debug > 0) console.log("found a key tap, " + numKeyTaps);
+            numKeyTaps++;
+
+            // update the webpage with out current count data
+            refreshCounts();
+        }
+
+    </script>
+
+</body>
+
+<!-- this div is just to announce to the user that we detected a leap device -->
+<div id="foundLeap">No LeapMotion detected</div>
+<!-- this div will be replaced with counter data once we start receiving it -->
+<div id="counters">If you have an attached LeapMotion then counters should be appearing here</div>
+
+<script>
+    function foundLeap() {
+        var element = document.getElementById("foundLeap");
+        element.innerHTML = "Hey, you've got a LeapMotion attached, cool! Try swiping left and right";
+    }
+
+
+
+    function refreshCounts() {
+        var element = document.getElementById("counters");
+        element.innerHTML = "numSwipes " + numSwipes + ", left " + numSwipesLeft + ", right " + numSwipesRight + ", taps " + numTaps + ", key taps " + numKeyTaps;
+    }
+</script>
+
+</html>
