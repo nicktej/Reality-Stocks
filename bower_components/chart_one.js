@@ -8,23 +8,43 @@ request.onload = function () {
   var data = JSON.parse(this.response);
 
   if (request.status >= 200 && request.status < 400) {
-    var daily = data["Time Series (Daily)"];
-    var day = Object.keys(data["Time Series (Daily)"]);
-    var length = Object.keys(daily).length;
+    var metadata = Object.keys(data["Meta Data"]);
+    var sx = metadata[1];
+    var date = metadata[2];
+    var symb = data["Meta Data"][sx];
+    var latest = data["Meta Data"][date];
+
+    var daily = Object.keys(data["Time Series (Daily)"]);
+    var day = [];
     var close = [];
-    // console.log(daily);
-    console.log(daily);
-    console.log(day);
-    console.log(length);
+    var length = 50;
 
     for (var i = length - 1; i >= 0; i--) {
-      close.push(+ daily[day[i]]["4. close"]);
+      day.push(daily[i]);
     }
 
-  for(var i=0; i<100;i++) close[i] = parseFloat(close[i], 10);
+    var open = data["Time Series (Daily)"][day[length-1]]["1. open"];
+    var high = data["Time Series (Daily)"][day[length-1]]["2. high"];
+    var low = data["Time Series (Daily)"][day[length-1]]["3. low"];
+    var closex = data["Time Series (Daily)"][day[length-1]]["4. close"];
 
+    for (var i = length - 1; i >= 0; i--) {
+      close.push(+ data["Time Series (Daily)"][day[i]]["4. close"]);
+    }
+
+  for(var i=0; i<length;i++) close[i] = parseFloat(close[i], 10);
+  close.reverse();
+
+  console.log(symb);
+  console.log(latest);
+  console.log(open);
+  console.log(high);
+  console.log(low);
+  console.log(closex);
+  console.log(daily);
+  console.log(day);
+  console.log(length);
   console.log(close);
-  day.reverse();
   } else {
     console.log('error');
   }

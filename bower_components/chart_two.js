@@ -11,18 +11,18 @@ request.onload = function () {
 
     var weekly = Object.keys(data["Weekly Time Series"]);
     var week = [];
-    for (var i = 100 - 1; i >= 0; i--) {
+    for (var i = 50 - 1; i >= 0; i--) {
       week.push(weekly[i]);
     }
     var close = [];
     console.log(weekly);
     console.log(week);
 
-    for (var i = 100 - 1; i >= 0; i--) {
+    for (var i = 50 - 1; i >= 0; i--) {
       close.push(+ data["Weekly Time Series"][week[i]]["4. close"]);
     }
 
-  for(var i=0; i<100;i++) close[i] = parseFloat(close[i], 10);
+  for(var i=0; i<50;i++) close[i] = parseFloat(close[i], 10);
   close.reverse();
   console.log(close);
   } else {
