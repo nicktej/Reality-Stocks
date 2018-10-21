@@ -1,6 +1,13 @@
 const express = require("express");
+const fetch = require("node-fetch");
 var router = module.exports = express.Router();
 var cache;
+
+const queryAPI = (functionName, symbol, extra) => {
+    return fetch(`https://www.alphavantage.co/query?apikey=${ALPHAVANTAGE_API_KEY}&function=${functionName}&symbol=${symbol}${extra ? "?" + extra : ""}`).then(response => response.json());
+}
+
+const ALPHAVANTAGE_API_KEY = "ZYVKYF0NSPIXY9A1"
 
 const COMPANIES = [
     {
@@ -30,4 +37,56 @@ const COMPANIES = [
 
 router.use("/companies", (req, res) => {
     setTimeout(() => res.send(COMPANIES), 2000);
-})
+});
+
+router.use("/stock/:ticker/:scale", (req, res) => {
+    const { ticker, scale } = req.params;
+
+    document.onkeydown = e => console.log("Key pressed", e.keyCode);
+    const triggerKeyDown = keyCode => document.dispatchEvent(new KeyboardEvent("keydown", { keyCode }));
+    triggerKeyDown(39);
+
+    if (scale === "daily") {
+        return queryAPI("TIME_SERIES_DAILY", ticker).then(data => {
+            let response = {
+                ticker,
+                scale,
+                data: Object.keys(data["Time Series (Daily)"]).map(date => {
+                    let dateData = data["Time Series (Daily)"][date];
+
+                    return {
+                        date,
+                        open: dateData["1. open"],
+                        high: dateData["2. high"],
+                        low: dateData["3. low"],
+                        close: dateData["4. close"],
+                        volume: dateData["5. volume"]
+                    }
+                })
+            };
+
+            return res.send(response);
+        });
+    } else if (scale === "weekly") {
+        return queryAPI("TIME_SERIES_WEEKLY", ticker).then(data => {
+            let response = {
+                ticker,
+                scale,
+                data: Object.keys(data["Weekly Time Series"]).map(date => {
+                    let dateData = data["Weekly Time Series"][date];
+
+                    return {
+                        date,
+                        open: dateData["1. open"],
+                        high: dateData["2. high"],
+                        low: dateData["3. low"],
+                        close: dateData["4. close"],
+                        volume: dateData["5. volume"]
+                    }
+                })
+            };
+
+            res.send(response);
+        });
+    }
+});

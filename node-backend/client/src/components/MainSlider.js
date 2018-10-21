@@ -83,12 +83,13 @@ class Company extends Component {
                     <ParallaxLayer className="stock-info-slide" offset={0} speed={0} onClick={e => this.parallax.scrollTo(1)}>
                         <div className="flex">
                             <div className="box flex flex-column">
-                                <div className="box text-big bg-aqua">
-                                    $1,105.18
+                                <div className="box bg-aqua">
+                                    <h3>CURRENT PRICE</h3>
+                                    <h1>$1,105.18</h1>
                                 </div>
 
                                 <div className="box bg-gold text-medium">
-                                    +7.27 (0.66%)
+                                    <h2>+7.27 (0.66%)</h2>
                                 </div>
                             </div>
 
