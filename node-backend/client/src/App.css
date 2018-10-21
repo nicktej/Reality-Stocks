@@ -1,64 +1,97 @@
-.container > div > div {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+body {
+  background: #20232f;
 }
 
-.text {
-  pointer-events: none;
-  justify-content: start !important;
-  font-family: 'Kanit', sans-serif;
-  line-height: 0px;
-  text-transform: uppercase;
-}
-
-.number {
-  font-size: 450px;
-  color: #373c4c;
-}
-
-.number span {
+.clock {
+  font-size: 48px;
+  font-family: sans-serif;
+  padding: 0.15em 0.2em;
+  border: 5px solid;
+  border-radius: 5px;
   display: inline-block;
-  position: relative;
-  transform: translate3d(-35%, 0, 0);
+  font-weight: bold;
 }
 
-.header {
-  margin-left: 350px;
-  font-size: 70px;
+.clock.clock-red {
+  border-color: #DC143C;
+  background: rgba(220, 20, 60, 0.1);
+}
+
+.clock.clock-green {
+  border-color: #32CD32;
+  background: rgba(50, 205, 50, 0.2);
+}
+
+.companies-container {
+  width: 100%;
   color: white;
 }
 
-.stripe {
-  height: 2px;
-  width: auto;
+.companies-container .company-container {
+  position: relative;
 }
 
-.slopeBegin {
-  background-color: #20232f;
-  clip-path: polygon(20vw 0, 70% 0, calc(70% - 20vw) 100%, 0 100%);
-}
-
-.slopeEnd {
-  clip-path: polygon(70% 0, 100% 0, calc(100% - 20vw) 100%, calc(70% - 20vw) 100%);
-}
-
-.slopeBegin,
-.slopeEnd {
+.companies-container .company-container .company-name {
   position: absolute;
-  width: 140%;
+  left: 20%;
+  top: 30%;
+  font-size: 90px;
+  -webkit-transition: all 500ms, color 250ms;
+  transition: all 500ms, color 250ms;
+  margin: 0;
+}
+
+.companies-container .company-container .company-ticker {
+  position: absolute;
+  font-size: 48px;
+  top: 50%;
+  right: 60%;
+  margin: 0;
+  -webkit-transition: all 500ms;
+  transition: all 500ms;
+}
+
+.companies-container .company-container .stock-info-slides {
+  display: none;
+  opacity: 0;
+  -webkit-transition: opacity 500ms 500ms;
+  transition: opacity 500ms 500ms;
+}
+
+.companies-container .company-container.expanded {
+  color: black;
+}
+
+.companies-container .company-container.expanded .company-name {
+  -webkit-transition: all 500ms;
+  transition: all 500ms;
+  border-bottom: 6px solid #0066ff;
+  top: 10px;
+  left: 10px;
+  font-size: 48px;
+}
+
+.companies-container .company-container.expanded .company-ticker {
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 8px;
+  padding: 0.2em 0.35em;
+  display: inline-block;
+  color: white;
+  right: 10px;
+  top: 10px;
+  font-size: 26px;
+  -webkit-transition: all 500ms;
+  transition: all 500ms;
+}
+
+.companies-container .company-container.expanded .stock-info-slides {
+  -webkit-transition: opacity 500ms 500ms;
+  transition: opacity 500ms 500ms;
+  display: block;
+  position: relative;
+  opacity: 1;
   height: 100%;
-  cursor: pointer;
+  top: 90px;
+  padding: 2em;
 }
-
-.pink {
-  background: linear-gradient(to right, deeppink 0%, coral 100%);
-}
-
-.teal {
-  background: linear-gradient(to right, SlateBlue 0%, DeepSkyBlue 100%);
-}
-
-.tomato {
-  background: linear-gradient(to right, tomato 0%, gold 100%);
-}
+/*# sourceMappingURL=App.css.map */
