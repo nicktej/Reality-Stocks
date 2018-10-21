@@ -23,10 +23,12 @@ request.onload = function () {
       day.push(daily[i]);
     }
 
-    var open = data["Time Series (Daily)"][day[length-1]]["1. open"];
-    var high = data["Time Series (Daily)"][day[length-1]]["2. high"];
-    var low = data["Time Series (Daily)"][day[length-1]]["3. low"];
-    var closex = data["Time Series (Daily)"][day[length-1]]["4. close"];
+    var open = parseFloat(data["Time Series (Daily)"][day[length-1]]["1. open"]);
+    var high = parseFloat(data["Time Series (Daily)"][day[length-1]]["2. high"]);
+    var low = parseFloat(data["Time Series (Daily)"][day[length-1]]["3. low"]);
+    var closenew = parseFloat(data["Time Series (Daily)"][day[length-1]]["4. close"]);
+    var closeold = parseFloat(data["Time Series (Daily)"][day[length-2]]["4. close"]);
+    var percent = ((closenew/closeold)-1)*100;
 
     for (var i = length - 1; i >= 0; i--) {
       close.push(+ data["Time Series (Daily)"][day[i]]["4. close"]);
@@ -40,7 +42,9 @@ request.onload = function () {
   console.log(open);
   console.log(high);
   console.log(low);
-  console.log(closex);
+  console.log(closenew);
+  console.log(closeold); 
+  console.log(percent); 
   console.log(daily);
   console.log(day);
   console.log(length);
