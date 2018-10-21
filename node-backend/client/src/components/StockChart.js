@@ -5,7 +5,7 @@ import { Line } from "react-chartjs-2";
 export default class StockChart extends Component {
     render() {
         let chartData = {
-            labels: this.props.data.map(data => data.date),
+            labels: this.props.data.map(data => data.date).reverse(),
             datasets: [
                 {
                     label: "Daily Closing Price",
@@ -26,7 +26,7 @@ export default class StockChart extends Component {
                     pointHoverBorderWidth: 2,
                     pointRadius: 1,
                     pointHitRadius: 10,
-                    data: this.props.data.map(data => data.close)
+                    data: this.props.data.map(data => data.close).reverse()
                 },
 
                 // {
