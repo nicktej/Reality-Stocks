@@ -2,18 +2,22 @@
 // https://dribbble.com/shots/4138489-Screeners
 
 import React, { Component, Fragment } from "react";
-import { Spring, Parallax, ParallaxLayer } from "react-spring";
+import { Spring, Parallax, ParallaxLayer, config } from "react-spring";
 import moment from "moment";
+import { Line } from "react-chartjs-2";
 
 const COMPANIES = [
     {
         company: "Alphabet Inc",
         ticker: "GOOGL",
+        logo: "https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png",
         gradient: ["#FF1493", "#FF7F50"]
     },
     {
         company: "Starbucks Corporation",
         ticker: "SBUX",
+        logo: "https://assets-starbucks.netdna-ssl.com/img/starbucks-newsroom.svg",
+        logoType: "square",
         gradient: ["#6A5ACD", "#00BFFF"]
     }
 ];
@@ -30,7 +34,7 @@ class Clock extends Component {
         }, 1000);
     }
 
-    componentDidUnmount() {
+    componentWillUnmount() {
         clearInterval(this.taskId);
     }
 
@@ -43,17 +47,60 @@ class Clock extends Component {
     }
 }
 
+const randomData = {
+    labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+    datasets: [
+        {
+            label: 'Random Test Data',
+            fill: false,
+            lineTension: 0.1,
+            backgroundColor: 'rgba(75,192,192,0.4)',
+            borderColor: 'rgba(75,192,192,1)',
+            borderCapStyle: 'butt',
+            borderDash: [],
+            borderDashOffset: 0.0,
+            borderJoinStyle: 'miter',
+            pointBorderColor: 'rgba(75,192,192,1)',
+            pointBackgroundColor: '#fff',
+            pointBorderWidth: 1,
+            pointHoverRadius: 5,
+            pointHoverBackgroundColor: 'rgba(75,192,192,1)',
+            pointHoverBorderColor: 'rgba(220,220,220,1)',
+            pointHoverBorderWidth: 2,
+            pointRadius: 1,
+            pointHitRadius: 10,
+            data: [65, 59, 80, 81, 56, 55, 40]
+        }
+    ]
+};
+
+const ChartTesting = props => (
+    <Line data={randomData} />
+)
+
 class Company extends Component {
     render() {
         return (
             <ParallaxLayer className={"company-container" + (this.props.expanded ? " expanded" : "")} offset={this.props.offset} speed={0} onClick={this.props.onClick}>
                 <h1 className="company-name">{this.props.company}</h1>
                 <h2 className="company-ticker">{this.props.ticker}</h2>
+                <img className={"company-logo" + (this.props.logoType ? " logo-" + this.props.logoType : "")} src={this.props.logo} />
 
-                <div className="stock-info-slides">
-                    SAMPLE STUFF HERE
-                    <Clock />
-                </div>
+                <Parallax
+                    className="stock-info-slides"
+                    ref={e => this.parallax = e}
+                    pages={2}
+                    horizontal scrolling={false}
+                    config={config.slow}
+                >
+                    <ParallaxLayer offset={0} speed={0} onClick={e => this.parallax.scrollTo(1)}>
+                        <Clock />
+                    </ParallaxLayer>
+
+                    <ParallaxLayer offset={1} speed={0} onClick={e => this.parallax.scrollTo(0)}>
+                        <ChartTesting />
+                    </ParallaxLayer>
+                </Parallax>
             </ParallaxLayer>
         )
     }
@@ -103,7 +150,7 @@ export default class MainSlider extends Component {
             <Spring
                 from={{
                     color: "black",
-                    gradientMove: 100,
+                    gradientMove: 500,
                 }}
                 to={{
                     gradientStart: currentCompany.gradient[0],
@@ -111,7 +158,8 @@ export default class MainSlider extends Component {
                     gradientMove: 0
                 }}
                 reset
-                config={{ tension: 25, friction: 8 }}
+                // config={{ tension: 25, friction: 8 }}
+                config={config.wobbly}
             >
                 {props => (
                     <Parallax
