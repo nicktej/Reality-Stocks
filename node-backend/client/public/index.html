@@ -10,6 +10,16 @@
       homescreen on Android. See https://developers.google.com/web/fundamentals/web-app-manifest/
     -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
+
+    <script src="https://js.leapmotion.com/leap-0.6.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/97/three.js"></script>
+    <script src="https://js.leapmotion.com/leap-plugins-0.1.12.min.js"></script>
+    <script src="https://js.leapmotion.com/leap-widgets-0.1.0.min.js"></script>
+    <script src="https://js.leapmotion.com/leap.rigged-hand-0.1.7.min.js"></script>
+    <script src="https://js.leapmotion.com/leap-plugins-0.1.12-utils.min.js"></script>
+
+
+    
     <!--
       Notice the use of %PUBLIC_URL% in the tags above.
       It will be replaced with the URL of the `public` folder during the build.
@@ -26,6 +36,8 @@
       You need to enable JavaScript to run this app.
     </noscript>
     <div id="root"></div>
+    <div id="output"></div>
+
     <!--
       This HTML file is a template.
       If you open it directly in the browser, you will see an empty page.
@@ -37,4 +49,13 @@
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
   </body>
+
+  <!-- this div is just to announce to the user that we detected a leap device -->
+  <div id="foundLeap">No LeapMotion detected</div>
+  <!-- this div will be replaced with counter data once we start receiving it -->
+  <div id="counters">If you have an attached LeapMotion then counters should be appearing here</div>
+  
+  <script>
+
+  </script>
 </html>
