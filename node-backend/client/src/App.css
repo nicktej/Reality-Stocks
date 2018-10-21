@@ -1,25 +1,61 @@
 body {
-  background: #20232f;
+  background: white;
+  min-height: 100%;
 }
 
-.clock {
-  font-size: 48px;
-  font-family: sans-serif;
-  padding: 0.15em 0.2em;
-  border: 5px solid;
-  border-radius: 5px;
-  display: inline-block;
-  font-weight: bold;
+.background {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
-.clock.clock-red {
-  border-color: #DC143C;
-  background: rgba(220, 20, 60, 0.1);
+.loading {
+  position: fixed;
+  top: 40%;
+  left: 50%;
 }
 
-.clock.clock-green {
-  border-color: #32CD32;
-  background: rgba(50, 205, 50, 0.2);
+.bg-orange {
+  background: #f88567;
+}
+
+.bg-gold {
+  background: #fbb564;
+}
+
+.bg-purple {
+  background: #9874b1;
+}
+
+.bg-aqua {
+  background: #2db6ac;
+}
+
+.flex {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: row;
+          flex-direction: row;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  -webkit-box-align: stretch;
+      -ms-flex-align: stretch;
+          align-items: stretch;
+}
+
+.flex.flex-column {
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
 }
 
 .companies-container {
@@ -44,6 +80,7 @@ body {
   transition: all 500ms, color 250ms;
   margin: 0;
   white-space: nowrap;
+  border-bottom: 8px solid white;
 }
 
 .companies-container .company-container .company-ticker {
@@ -57,10 +94,51 @@ body {
 }
 
 .companies-container .company-container .stock-info-slides {
-  display: none;
   opacity: 0;
-  -webkit-transition: opacity 500ms 500ms;
-  transition: opacity 500ms 500ms;
+  -webkit-animation: fadeIn 500ms ease-in-out 500ms forwards;
+          animation: fadeIn 500ms ease-in-out 500ms forwards;
+  position: relative;
+  height: 100%;
+  top: 90px;
+  padding: 2em;
+}
+
+@-webkit-keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.companies-container .company-container .stock-info-slides .stock-info-slide .box {
+  padding: 25px;
+  font-size: 18px;
+  border-radius: 5px;
+  margin: 0.5em 0;
+  color: white;
+}
+
+.companies-container .company-container .stock-info-slides .stock-info-slide .box h1 {
+  font-size: 56px;
+}
+
+.companies-container .company-container .stock-info-slides .stock-info-slide .box h2 {
+  font-size: 40px;
+}
+
+.companies-container .company-container .stock-info-slides .stock-info-slide .box h3 {
+  font-size: 32px;
 }
 
 .companies-container .company-container .company-logo {
@@ -79,6 +157,30 @@ body {
 .companies-container .company-container .company-logo.logo-square {
   width: 280px;
   height: auto;
+}
+
+.companies-container .company-container .clock {
+  font-size: 44px;
+  font-family: sans-serif;
+  padding: 0.15em 0.2em;
+  border: 5px solid;
+  border-radius: 5px;
+  display: inline-block;
+  font-weight: bold;
+  position: absolute;
+  top: 10px;
+  right: 20%;
+  opacity: 0;
+}
+
+.companies-container .company-container .clock.clock-red {
+  border-color: #DC143C;
+  background: rgba(220, 20, 60, 0.1);
+}
+
+.companies-container .company-container .clock.clock-green {
+  border-color: #32CD32;
+  background: rgba(50, 205, 50, 0.2);
 }
 
 .companies-container .company-container * {
@@ -116,20 +218,9 @@ body {
 }
 
 .companies-container .company-container.expanded .company-logo {
-  top: 10px;
-  height: 75px;
+  top: 5px;
+  height: 65px;
   -webkit-transform: translate3d(-50%, 0, 0);
           transform: translate3d(-50%, 0, 0);
-}
-
-.companies-container .company-container.expanded .stock-info-slides {
-  -webkit-transition: opacity 500ms 500ms;
-  transition: opacity 500ms 500ms;
-  display: block;
-  position: relative;
-  opacity: 1;
-  height: 100%;
-  top: 90px;
-  padding: 2em;
 }
 /*# sourceMappingURL=App.css.map */

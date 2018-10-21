@@ -5,33 +5,22 @@ import React, { Component, Fragment } from "react";
 import { Spring, Parallax, ParallaxLayer, config } from "react-spring";
 import moment from "moment";
 import { Line } from "react-chartjs-2";
-
-const COMPANIES = [
-    {
-        company: "Alphabet Inc",
-        ticker: "GOOGL",
-        logo: "https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png",
-        gradient: ["#FF1493", "#FF7F50"]
-    },
-    {
-        company: "Starbucks Corporation",
-        ticker: "SBUX",
-        logo: "https://assets-starbucks.netdna-ssl.com/img/starbucks-newsroom.svg",
-        logoType: "square",
-        gradient: ["#6A5ACD", "#00BFFF"]
-    }
-];
+import { CircularProgress, LinearProgress } from "@material-ui/core";
 
 class Clock extends Component {
-    componentWillMount() {
-        this.taskId = setInterval(() => {
-            let now = moment();
+    update = () => {
+        let now = moment();
 
-            this.setState({
-                time: now.format("h:mm:ss"),
-                amPm: now.format("A")
-            });
-        }, 1000);
+        this.setState({
+            time: now.format("h:mm:ss"),
+            amPm: now.format("A"),
+            stockMarketActive: false // TODO Dynamic
+        });
+    };
+
+    componentWillMount() {
+        this.taskId = setInterval(this.update, 1000);
+        this.update();
     }
 
     componentWillUnmount() {
@@ -39,10 +28,8 @@ class Clock extends Component {
     }
 
     render() {
-        if (!this.state) return null;
-
         return (
-            <div className="clock clock-green">{this.state.time} <small>{this.state.amPm}</small></div>
+            <div className={"clock clock-" + (this.state.stockMarketActive ? "green" : "red")}>{this.state.time} <small>{this.state.amPm}</small></div>
         )
     }
 }
@@ -86,25 +73,49 @@ class Company extends Component {
                 <h2 className="company-ticker">{this.props.ticker}</h2>
                 <img className={"company-logo" + (this.props.logoType ? " logo-" + this.props.logoType : "")} src={this.props.logo} />
 
-                <Parallax
+                {this.props.expanded && <Parallax
                     className="stock-info-slides"
                     ref={e => this.parallax = e}
                     pages={2}
                     horizontal scrolling={false}
                     config={config.slow}
                 >
-                    <ParallaxLayer offset={0} speed={0} onClick={e => this.parallax.scrollTo(1)}>
+                    <ParallaxLayer className="stock-info-slide" offset={0} speed={0} onClick={e => this.parallax.scrollTo(1)}>
+                        <div className="flex">
+                            <div className="box flex flex-column">
+                                <div className="box text-big bg-aqua">
+                                    $1,105.18
+                                </div>
+
+                                <div className="box bg-gold text-medium">
+                                    +7.27 (0.66%)
+                                </div>
+                            </div>
+
+                            <div className="box">
+                                <ChartTesting />
+                            </div>
+                        </div>
                         <Clock />
+                        <h2> ^ Testing clock</h2>
                     </ParallaxLayer>
 
-                    <ParallaxLayer offset={1} speed={0} onClick={e => this.parallax.scrollTo(0)}>
+                    <ParallaxLayer className="stock-info-slide" offset={1} speed={0} onClick={e => this.parallax.scrollTo(0)}>
+                        <h2>Test Data</h2>
                         <ChartTesting />
                     </ParallaxLayer>
-                </Parallax>
+                </Parallax>}
             </ParallaxLayer>
         )
     }
 }
+
+const Loading = props => (
+    <div className="loading">
+        {/* <LinearProgress variant="query" color="blue" /> */}
+        <CircularProgress size={120} />
+    </div>
+);
 
 export default class MainSlider extends Component {
     state = {
@@ -113,9 +124,11 @@ export default class MainSlider extends Component {
     };
 
     setPage = index => {
+        if (!this.state.companies) return;
+
         if (index < 0) {
-            index = COMPANIES.length - 1;
-        } else if (index >= COMPANIES.length) {
+            index = this.state.companies.length - 1;
+        } else if (index >= this.state.companies.length) {
             index = 0;
         }
 
@@ -124,6 +137,14 @@ export default class MainSlider extends Component {
     }
 
     componentDidMount() {
+        // Fetch companies
+        fetch("/api/companies")
+            .then(response => response.json())
+            .then(companies => {
+                console.log("Loaded companies", companies);
+                this.setState({ companies });
+            });
+
         document.addEventListener("keydown", event => {
             if (event.keyCode === 37) {
                 // Left arrow
@@ -144,45 +165,56 @@ export default class MainSlider extends Component {
     }
 
     render() {
-        let currentCompany = COMPANIES[this.state.index];
+        if (!this.state.companies) {
+            return (
+                <Loading />
+            );
+        }
+
+        let currentCompany = this.state.companies[this.state.index];
 
         return (
-            <Spring
-                from={{
-                    color: "black",
-                    gradientMove: 500,
-                }}
-                to={{
-                    gradientStart: currentCompany.gradient[0],
-                    gradientEnd: currentCompany.gradient[1],
-                    gradientMove: 0
-                }}
-                reset
-                // config={{ tension: 25, friction: 8 }}
-                config={config.wobbly}
-            >
-                {props => (
-                    <Parallax
-                        className="companies-container"
-                        style={{
-                            background: this.state.expanded ? ("linear-gradient(to bottom, " + props.gradientEnd + " 0%, white " + props.gradientMove + "%)") : ("linear-gradient(to right, " + props.gradientStart + " 0%, " + props.gradientEnd + " 100%)"),
-                        }}
-                        ref={e => this.parallax = e}
-                        pages={COMPANIES.length}
-                        horizontal scrolling={false}
-                        config={{ tension: 30, friction: 15 }}
-                    >
-                        {COMPANIES.map((company, index) => (
-                            <Company
-                                key={company.ticker}
-                                offset={index}
-                                {...company}
-                                expanded={this.state.expanded && this.state.index === index}
-                            />
-                        ))}
-                    </Parallax>
-                )}
-            </Spring>
+            <Fragment>
+                <Spring
+                    from={{
+                        color: "black",
+                        gradientMove: 100,
+                    }}
+                    to={{
+                        gradientStart: currentCompany.gradient[0],
+                        gradientEnd: currentCompany.gradient[1],
+                        gradientMove: 0
+                    }}
+                    reset
+                    config={config.slow}
+                >
+                    {props => (
+                        <div
+                            className="background"
+                            style={{
+                                background: this.state.expanded ? ("linear-gradient(to bottom, " + props.gradientEnd + " 0%, white " + props.gradientMove + "%)") : ("linear-gradient(to right, " + props.gradientStart + " 0%, " + props.gradientEnd + " 100%)"),
+                            }}
+                        />
+                    )}
+                </Spring>
+
+                {this.state.companies && <Parallax
+                    className="companies-container"
+                    ref={e => this.parallax = e}
+                    pages={this.state.companies.length}
+                    horizontal scrolling={false}
+                    config={{ tension: 30, friction: 15 }}
+                >
+                    {this.state.companies.map((company, index) => (
+                        <Company
+                            key={company.ticker}
+                            offset={index}
+                            {...company}
+                            expanded={this.state.expanded && this.state.index === index}
+                        />
+                    ))}
+                </Parallax>}
+            </Fragment>
         );
     }
 }
