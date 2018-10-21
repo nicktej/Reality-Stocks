@@ -99,10 +99,12 @@ body {
   position: absolute;
   font-size: 48px;
   top: 70%;
-  right: 60%;
+  right: 50%;
   margin: 0;
   -webkit-transition: all 500ms;
   transition: all 500ms;
+  -webkit-transform: translateX(50%);
+          transform: translateX(50%);
 }
 
 .companies-container .company-container .stock-info-slides {
@@ -131,10 +133,6 @@ body {
   to {
     opacity: 1;
   }
-}
-
-.companies-container .company-container .stock-info-slides .stock-info-slide {
-  width: 90%;
 }
 
 .companies-container .company-container .stock-info-slides .stock-info-slide .box {
@@ -232,6 +230,8 @@ body {
   right: 10px;
   top: 10px;
   font-size: 26px;
+  -webkit-transform: none;
+          transform: none;
 }
 
 .companies-container .company-container.expanded .company-logo {
