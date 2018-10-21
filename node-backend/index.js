@@ -12,6 +12,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Host static files
 app.use(express.static(path.join(__dirname, "client/build")));
 
+// API route
+app.use("/api", require("./router-api"));
+
 // Always redirect to index file
 app.get("*", (req, res) => res.sendFile(path.join(__dirname, "client/build/index.html")));
 
@@ -19,13 +22,13 @@ app.get("*", (req, res) => res.sendFile(path.join(__dirname, "client/build/index
 app.use((err, req, res, next) => {
     console.log("[ERROR]", err);
 
-    if(typeof err == "string"){
+    if (typeof err == "string") {
         err = {
             message: err
         }
     }
 
-    if(err instanceof Error){
+    if (err instanceof Error) {
         return res.status(err.status || 500).send(err); // Default to internal server error
     }
 
