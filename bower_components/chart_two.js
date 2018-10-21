@@ -9,24 +9,22 @@ request.onload = function () {
 
   if (request.status >= 200 && request.status < 400) {
 
-    var weekly = data["Weekly Time Series"];
+    var weekly = Object.keys(data["Weekly Time Series"]);
     var week = [];
     for (var i = 100 - 1; i >= 0; i--) {
-      week.push(weekly[0]);
+      week.push(weekly[i]);
     }
     var close = [];
-    // console.log(weekly);
     console.log(weekly);
     console.log(week);
 
     for (var i = 100 - 1; i >= 0; i--) {
-      close.push(+ week["4. close"]);
+      close.push(+ data["Weekly Time Series"][week[i]]["4. close"]);
     }
 
   for(var i=0; i<100;i++) close[i] = parseFloat(close[i], 10);
-
+  close.reverse();
   console.log(close);
-  week.reverse();
   } else {
     console.log('error');
   }
